@@ -1,7 +1,7 @@
 {
   "name": "Pesu · Phrase lessons",
   "short_name": "Pesu",
-  "description": "Learn real-life phrases in Spanish, French, German, Japanese and Hindi through illustrated scenes, audio, speaking and a Super Memory review loop.",
+  "description": "Learn real-life phrases in English, Spanish, French, German, Japanese, Hindi and Tamil through illustrated scenes, audio, speaking and a Super Memory review loop.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

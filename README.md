@@ -1,6 +1,6 @@
 # Pesu
 
-**பேசு — "speak".** Learn real-life phrases in Spanish, French, German, Japanese and Hindi.
+**பேசு — "speak".** Learn real-life phrases in English, Spanish, French, German, Japanese, Hindi and Tamil.
 
 Live: https://pesu-phrases.vercel.app
 

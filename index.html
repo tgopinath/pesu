@@ -217,86 +217,88 @@ kbd{font:inherit;font-size:11px;padding:1px 5px;border-radius:5px;border:1px sol
 <script>
 /* ---------- Content ---------- */
 const LANGS = {
+  en:{name:'English',native:'English',flag:'🇬🇧',tts:'en-GB',latin:true,hello:'Hello!'},
   es:{name:'Spanish',native:'Español',flag:'🇪🇸',tts:'es-ES',latin:true,hello:'¡Hola!',accents:['á','é','í','ó','ú','ñ','ü','¿','¡']},
   fr:{name:'French',native:'Français',flag:'🇫🇷',tts:'fr-FR',latin:true,hello:'Salut !',accents:['é','è','ê','à','â','ç','ô','û','ï']},
   de:{name:'German',native:'Deutsch',flag:'🇩🇪',tts:'de-DE',latin:true,hello:'Hallo!',accents:['ä','ö','ü','ß']},
   ja:{name:'Japanese',native:'日本語',flag:'🇯🇵',tts:'ja-JP',latin:false,hello:'こんにちは'},
   hi:{name:'Hindi',native:'हिन्दी',flag:'🇮🇳',tts:'hi-IN',latin:false,hello:'नमस्ते'},
+  ta:{name:'Tamil',native:'தமிழ்',flag:'🇮🇳',tts:'ta-IN',latin:false,hello:'வணக்கம்'},
 };
-// [emoji, english, es, fr, de, [ja, romaji], [hi, translit]]   ja tokens split with |
+// [emoji, english, es, fr, de, [ja, romaji], [hi, translit], [ta, translit]]  (english doubles as the 'en' course)   ja tokens split with |
 const RAW = [
  {id:'essentials',name:'Essentials',icon:'👋',color:'#FFB547',items:[
-  ['👋','Hello','Hola','Salut','Hallo',['こんにちは','konnichiwa'],['नमस्ते','namaste']],
-  ['🌅','Good morning','Buenos días','Bonjour','Guten Morgen',['おはよう|ございます','ohayō gozaimasu'],['सुप्रभात','suprabhāt']],
-  ['🌙','Good night','Buenas noches','Bonne nuit','Gute Nacht',['おやすみ|なさい','oyasumi nasai'],['शुभ रात्रि','shubh rātri']],
-  ['🙏','Thank you','Gracias','Merci','Danke',['ありがとう','arigatō'],['धन्यवाद','dhanyavād']],
-  ['🤲','Please','Por favor','S\'il vous plaît','Bitte',['お願い|します','onegai shimasu'],['कृपया','kripayā']],
-  ['✅','Yes','Sí','Oui','Ja',['はい','hai'],['हाँ','hā̃']],
-  ['❌','No','No','Non','Nein',['いいえ','iie'],['नहीं','nahī̃']],
-  ['😔','Sorry','Lo siento','Désolé','Entschuldigung',['ごめん|なさい','gomen nasai'],['माफ़ कीजिए','māf kījiye']],
+  ['👋','Hello','Hola','Salut','Hallo',['こんにちは','konnichiwa'],['नमस्ते','namaste'],['வணக்கம்','vaṇakkam']],
+  ['🌅','Good morning','Buenos días','Bonjour','Guten Morgen',['おはよう|ございます','ohayō gozaimasu'],['सुप्रभात','suprabhāt'],['காலை வணக்கம்','kālai vaṇakkam']],
+  ['🌙','Good night','Buenas noches','Bonne nuit','Gute Nacht',['おやすみ|なさい','oyasumi nasai'],['शुभ रात्रि','shubh rātri'],['இனிய இரவு','iniya iravu']],
+  ['🙏','Thank you','Gracias','Merci','Danke',['ありがとう','arigatō'],['धन्यवाद','dhanyavād'],['நன்றி','nanri']],
+  ['🤲','Please','Por favor','S\'il vous plaît','Bitte',['お願い|します','onegai shimasu'],['कृपया','kripayā'],['தயவுசெய்து','tayavuseydu']],
+  ['✅','Yes','Sí','Oui','Ja',['はい','hai'],['हाँ','hā̃'],['ஆம்','ām']],
+  ['❌','No','No','Non','Nein',['いいえ','iie'],['नहीं','nahī̃'],['இல்லை','illai']],
+  ['😔','Sorry','Lo siento','Désolé','Entschuldigung',['ごめん|なさい','gomen nasai'],['माफ़ कीजिए','māf kījiye'],['மன்னிக்கவும்','mannikkavum']],
  ]},
  {id:'conversation',name:'Conversation',icon:'💬',color:'#7FB8FF',items:[
-  ['🪪','What is your name?','¿Cómo te llamas?','Comment tu t\'appelles ?','Wie heißt du?',['お名前は|何|ですか','onamae wa nan desu ka'],['आपका नाम क्या है?','āpkā nām kyā hai?']],
-  ['🙋‍♀️','My name is Anna','Me llamo Ana','Je m\'appelle Anna','Ich heiße Anna',['私は|アンナ|です','watashi wa Anna desu'],['मेरा नाम अन्ना है','merā nām Annā hai']],
-  ['🤔','How are you?','¿Cómo estás?','Comment ça va ?','Wie geht es dir?',['お元気|ですか','ogenki desu ka'],['आप कैसे हैं?','āp kaise hain?']],
-  ['😊','I\'m fine','Estoy bien','Ça va bien','Mir geht es gut',['元気|です','genki desu'],['मैं ठीक हूँ','main ṭhīk hū̃']],
-  ['🌍','Where are you from?','¿De dónde eres?','Tu viens d\'où ?','Woher kommst du?',['どこ|から|来ましたか','doko kara kimashita ka'],['आप कहाँ से हैं?','āp kahā̃ se hain?']],
-  ['🗺️','I am from India','Soy de la India','Je viens d\'Inde','Ich komme aus Indien',['インド|から|来ました','Indo kara kimashita'],['मैं भारत से हूँ','main Bhārat se hū̃']],
-  ['🤝','Nice to meet you','Encantado de conocerte','Enchanté','Freut mich',['はじめまして','hajimemashite'],['आपसे मिलकर खुशी हुई','āpse milkar khushī huī']],
-  ['🗣️','Do you speak English?','¿Hablas inglés?','Tu parles anglais ?','Sprichst du Englisch?',['英語を|話せますか','eigo o hanasemasu ka'],['क्या आप अंग्रेज़ी बोलते हैं?','kyā āp angrezī bolte hain?']],
+  ['🪪','What is your name?','¿Cómo te llamas?','Comment tu t\'appelles ?','Wie heißt du?',['お名前は|何|ですか','onamae wa nan desu ka'],['आपका नाम क्या है?','āpkā nām kyā hai?'],['உங்கள் பெயர் என்ன?','ungaḷ peyar enna?']],
+  ['🙋‍♀️','My name is Anna','Me llamo Ana','Je m\'appelle Anna','Ich heiße Anna',['私は|アンナ|です','watashi wa Anna desu'],['मेरा नाम अन्ना है','merā nām Annā hai'],['என் பெயர் அன்னா','en peyar Annā']],
+  ['🤔','How are you?','¿Cómo estás?','Comment ça va ?','Wie geht es dir?',['お元気|ですか','ogenki desu ka'],['आप कैसे हैं?','āp kaise hain?'],['நீங்கள் எப்படி இருக்கிறீர்கள்?','nīngaḷ eppaḍi irukkirīrgaḷ?']],
+  ['😊','I\'m fine','Estoy bien','Ça va bien','Mir geht es gut',['元気|です','genki desu'],['मैं ठीक हूँ','main ṭhīk hū̃'],['நான் நன்றாக இருக்கிறேன்','nān nanrāga irukkirēn']],
+  ['🌍','Where are you from?','¿De dónde eres?','Tu viens d\'où ?','Woher kommst du?',['どこ|から|来ましたか','doko kara kimashita ka'],['आप कहाँ से हैं?','āp kahā̃ se hain?'],['நீங்கள் எங்கிருந்து வருகிறீர்கள்?','nīngaḷ engirundu varugirīrgaḷ?']],
+  ['🗺️','I am from India','Soy de la India','Je viens d\'Inde','Ich komme aus Indien',['インド|から|来ました','Indo kara kimashita'],['मैं भारत से हूँ','main Bhārat se hū̃'],['நான் இந்தியாவிலிருந்து வருகிறேன்','nān Indiyāvilirundu varugirēn']],
+  ['🤝','Nice to meet you','Encantado de conocerte','Enchanté','Freut mich',['はじめまして','hajimemashite'],['आपसे मिलकर खुशी हुई','āpse milkar khushī huī'],['உங்களைச் சந்தித்ததில் மகிழ்ச்சி','ungaḷaic candittatil magiḻcci']],
+  ['🗣️','Do you speak English?','¿Hablas inglés?','Tu parles anglais ?','Sprichst du Englisch?',['英語を|話せますか','eigo o hanasemasu ka'],['क्या आप अंग्रेज़ी बोलते हैं?','kyā āp angrezī bolte hain?'],['நீங்கள் ஆங்கிலம் பேசுவீர்களா?','nīngaḷ āngilam pēsuvīrgaḷā?']],
  ]},
  {id:'numbers',name:'Numbers',icon:'🔢',color:'#B9A2FF',items:[
-  ['1️⃣','One','Uno','Un','Eins',['いち','ichi'],['एक','ek']],
-  ['2️⃣','Two','Dos','Deux','Zwei',['に','ni'],['दो','do']],
-  ['3️⃣','Three','Tres','Trois','Drei',['さん','san'],['तीन','tīn']],
-  ['4️⃣','Four','Cuatro','Quatre','Vier',['よん','yon'],['चार','chār']],
-  ['5️⃣','Five','Cinco','Cinq','Fünf',['ご','go'],['पाँच','pā̃ch']],
-  ['6️⃣','Six','Seis','Six','Sechs',['ろく','roku'],['छह','chhah']],
-  ['7️⃣','Seven','Siete','Sept','Sieben',['なな','nana'],['सात','sāt']],
-  ['🔟','Ten','Diez','Dix','Zehn',['じゅう','jū'],['दस','das']],
+  ['1️⃣','One','Uno','Un','Eins',['いち','ichi'],['एक','ek'],['ஒன்று','onru']],
+  ['2️⃣','Two','Dos','Deux','Zwei',['に','ni'],['दो','do'],['இரண்டு','iraṇḍu']],
+  ['3️⃣','Three','Tres','Trois','Drei',['さん','san'],['तीन','tīn'],['மூன்று','mūnru']],
+  ['4️⃣','Four','Cuatro','Quatre','Vier',['よん','yon'],['चार','chār'],['நான்கு','nāngu']],
+  ['5️⃣','Five','Cinco','Cinq','Fünf',['ご','go'],['पाँच','pā̃ch'],['ஐந்து','aindu']],
+  ['6️⃣','Six','Seis','Six','Sechs',['ろく','roku'],['छह','chhah'],['ஆறு','āru']],
+  ['7️⃣','Seven','Siete','Sept','Sieben',['なな','nana'],['सात','sāt'],['ஏழு','ēḻu']],
+  ['🔟','Ten','Diez','Dix','Zehn',['じゅう','jū'],['दस','das'],['பத்து','pattu']],
  ]},
  {id:'colors',name:'Colors',icon:'🎨',color:'#FF8FB1',items:[
-  ['🔴','Red','Rojo','Rouge','Rot',['赤','aka'],['लाल','lāl']],
-  ['🔵','Blue','Azul','Bleu','Blau',['青','ao'],['नीला','nīlā']],
-  ['🟢','Green','Verde','Vert','Grün',['緑','midori'],['हरा','harā']],
-  ['🟡','Yellow','Amarillo','Jaune','Gelb',['黄色','kiiro'],['पीला','pīlā']],
-  ['⚫','Black','Negro','Noir','Schwarz',['黒','kuro'],['काला','kālā']],
-  ['⚪','White','Blanco','Blanc','Weiß',['白','shiro'],['सफ़ेद','safed']],
-  ['🟠','Orange','Naranja','Orange','Orange',['オレンジ','orenji'],['नारंगी','nārangī']],
-  ['🟣','Purple','Morado','Violet','Lila',['紫','murasaki'],['बैंगनी','baingnī']],
+  ['🔴','Red','Rojo','Rouge','Rot',['赤','aka'],['लाल','lāl'],['சிவப்பு','sivappu']],
+  ['🔵','Blue','Azul','Bleu','Blau',['青','ao'],['नीला','nīlā'],['நீலம்','nīlam']],
+  ['🟢','Green','Verde','Vert','Grün',['緑','midori'],['हरा','harā'],['பச்சை','paccai']],
+  ['🟡','Yellow','Amarillo','Jaune','Gelb',['黄色','kiiro'],['पीला','pīlā'],['மஞ்சள்','mañcaḷ']],
+  ['⚫','Black','Negro','Noir','Schwarz',['黒','kuro'],['काला','kālā'],['கருப்பு','karuppu']],
+  ['⚪','White','Blanco','Blanc','Weiß',['白','shiro'],['सफ़ेद','safed'],['வெள்ளை','veḷḷai']],
+  ['🟠','Orange','Naranja','Orange','Orange',['オレンジ','orenji'],['नारंगी','nārangī'],['ஆரஞ்சு','ārañju']],
+  ['🟣','Purple','Morado','Violet','Lila',['紫','murasaki'],['बैंगनी','baingnī'],['ஊதா','ūdā']],
  ]},
  {id:'restaurant',name:'Restaurant',icon:'🍽️',color:'#FF9F6B',items:[
-  ['🪑','A table for two, please','Una mesa para dos, por favor','Une table pour deux, s\'il vous plaît','Einen Tisch für zwei, bitte',['二人|です|お願いします','futari desu, onegai shimasu'],['दो लोगों के लिए एक मेज़, कृपया','do logõ ke liye ek mez, kripayā']],
-  ['📜','The menu, please','La carta, por favor','La carte, s\'il vous plaît','Die Speisekarte, bitte',['メニューを|お願いします','menyū o onegai shimasu'],['मेन्यू दीजिए, कृपया','menyū dījiye, kripayā']],
-  ['💧','I would like water','Quisiera agua','Je voudrais de l\'eau','Ich möchte Wasser',['水を|ください','mizu o kudasai'],['मुझे पानी चाहिए','mujhe pānī chāhiye']],
-  ['☕','A coffee, please','Un café, por favor','Un café, s\'il vous plaît','Einen Kaffee, bitte',['コーヒーを|ください','kōhī o kudasai'],['एक कॉफ़ी, कृपया','ek kofī, kripayā']],
-  ['🥗','I am vegetarian','Soy vegetariano','Je suis végétarien','Ich bin Vegetarier',['ベジタリアン|です','bejitarian desu'],['मैं शाकाहारी हूँ','main shākāhārī hū̃']],
-  ['😋','It is delicious','Está delicioso','C\'est délicieux','Es ist lecker',['おいしい|です','oishii desu'],['बहुत स्वादिष्ट है','bahut svādiṣṭ hai']],
-  ['🧾','The bill, please','La cuenta, por favor','L\'addition, s\'il vous plaît','Die Rechnung, bitte',['お会計を|お願いします','okaikei o onegai shimasu'],['बिल दीजिए, कृपया','bil dījiye, kripayā']],
-  ['🥂','Cheers!','¡Salud!','Santé !','Prost!',['乾杯','kanpai'],['चीयर्स!','chīyars!']],
+  ['🪑','A table for two, please','Una mesa para dos, por favor','Une table pour deux, s\'il vous plaît','Einen Tisch für zwei, bitte',['二人|です|お願いします','futari desu, onegai shimasu'],['दो लोगों के लिए एक मेज़, कृपया','do logõ ke liye ek mez, kripayā'],['இரண்டு பேருக்கு ஒரு மேஜை, தயவுசெய்து','iraṇḍu pērukku oru mējai, tayavuseydu']],
+  ['📜','The menu, please','La carta, por favor','La carte, s\'il vous plaît','Die Speisekarte, bitte',['メニューを|お願いします','menyū o onegai shimasu'],['मेन्यू दीजिए, कृपया','menyū dījiye, kripayā'],['மெனு கொடுங்கள்','menu koḍungaḷ']],
+  ['💧','I would like water','Quisiera agua','Je voudrais de l\'eau','Ich möchte Wasser',['水を|ください','mizu o kudasai'],['मुझे पानी चाहिए','mujhe pānī chāhiye'],['எனக்குத் தண்ணீர் வேண்டும்','enakkut taṇṇīr vēṇḍum']],
+  ['☕','A coffee, please','Un café, por favor','Un café, s\'il vous plaît','Einen Kaffee, bitte',['コーヒーを|ください','kōhī o kudasai'],['एक कॉफ़ी, कृपया','ek kofī, kripayā'],['ஒரு காபி, தயவுசெய்து','oru kāpi, tayavuseydu']],
+  ['🥗','I am vegetarian','Soy vegetariano','Je suis végétarien','Ich bin Vegetarier',['ベジタリアン|です','bejitarian desu'],['मैं शाकाहारी हूँ','main shākāhārī hū̃'],['நான் சைவம்','nān saivam']],
+  ['😋','It is delicious','Está delicioso','C\'est délicieux','Es ist lecker',['おいしい|です','oishii desu'],['बहुत स्वादिष्ट है','bahut svādiṣṭ hai'],['மிகவும் சுவையாக இருக்கிறது','migavum suvaiyāga irukkiradu']],
+  ['🧾','The bill, please','La cuenta, por favor','L\'addition, s\'il vous plaît','Die Rechnung, bitte',['お会計を|お願いします','okaikei o onegai shimasu'],['बिल दीजिए, कृपया','bil dījiye, kripayā'],['பில் கொடுங்கள்','bil koḍungaḷ']],
+  ['🥂','Cheers!','¡Salud!','Santé !','Prost!',['乾杯','kanpai'],['चीयर्स!','chīyars!'],['சியர்ஸ்!','ciyars!']],
  ]},
  {id:'travel',name:'Getting around',icon:'🚕',color:'#5FD3B5',items:[
-  ['🚉','Where is the station?','¿Dónde está la estación?','Où est la gare ?','Wo ist der Bahnhof?',['駅は|どこ|ですか','eki wa doko desu ka'],['स्टेशन कहाँ है?','sṭeshan kahā̃ hai?']],
-  ['✈️','Take me to the airport','Lléveme al aeropuerto','Emmenez-moi à l\'aéroport','Bringen Sie mich zum Flughafen',['空港まで|お願いします','kūkō made onegai shimasu'],['मुझे हवाई अड्डे ले चलिए','mujhe havāī aḍḍe le chaliye']],
-  ['⬅️','Turn left','Gire a la izquierda','Tournez à gauche','Biegen Sie links ab',['左に|曲がって|ください','hidari ni magatte kudasai'],['बाएँ मुड़िए','bāẽ muṛiye']],
-  ['➡️','Turn right','Gire a la derecha','Tournez à droite','Biegen Sie rechts ab',['右に|曲がって|ください','migi ni magatte kudasai'],['दाएँ मुड़िए','dāẽ muṛiye']],
-  ['⬆️','Straight ahead','Todo recto','Tout droit','Geradeaus',['まっすぐ','massugu'],['सीधे जाइए','sīdhe jāiye']],
-  ['🛑','Stop here','Pare aquí','Arrêtez-vous ici','Halten Sie hier',['ここで|止めて|ください','koko de tomete kudasai'],['यहाँ रुकिए','yahā̃ rukiye']],
-  ['💰','How much is it?','¿Cuánto cuesta?','Combien ça coûte ?','Wie viel kostet das?',['いくら|ですか','ikura desu ka'],['यह कितने का है?','yah kitne kā hai?']],
-  ['🏨','Where is the hotel?','¿Dónde está el hotel?','Où est l\'hôtel ?','Wo ist das Hotel?',['ホテルは|どこ|ですか','hoteru wa doko desu ka'],['होटल कहाँ है?','hoṭal kahā̃ hai?']],
+  ['🚉','Where is the station?','¿Dónde está la estación?','Où est la gare ?','Wo ist der Bahnhof?',['駅は|どこ|ですか','eki wa doko desu ka'],['स्टेशन कहाँ है?','sṭeshan kahā̃ hai?'],['ரயில் நிலையம் எங்கே?','rayil nilaiyam engē?']],
+  ['✈️','Take me to the airport','Lléveme al aeropuerto','Emmenez-moi à l\'aéroport','Bringen Sie mich zum Flughafen',['空港まで|お願いします','kūkō made onegai shimasu'],['मुझे हवाई अड्डे ले चलिए','mujhe havāī aḍḍe le chaliye'],['என்னை விமான நிலையத்துக்குக் கூட்டிச் செல்லுங்கள்','ennai vimāna nilaiyattukkuk kūṭṭic cellungaḷ']],
+  ['⬅️','Turn left','Gire a la izquierda','Tournez à gauche','Biegen Sie links ab',['左に|曲がって|ください','hidari ni magatte kudasai'],['बाएँ मुड़िए','bāẽ muṛiye'],['இடது பக்கம் திரும்புங்கள்','iḍadu pakkam tirumbungaḷ']],
+  ['➡️','Turn right','Gire a la derecha','Tournez à droite','Biegen Sie rechts ab',['右に|曲がって|ください','migi ni magatte kudasai'],['दाएँ मुड़िए','dāẽ muṛiye'],['வலது பக்கம் திரும்புங்கள்','valadu pakkam tirumbungaḷ']],
+  ['⬆️','Straight ahead','Todo recto','Tout droit','Geradeaus',['まっすぐ','massugu'],['सीधे जाइए','sīdhe jāiye'],['நேராகச் செல்லுங்கள்','nērāgac cellungaḷ']],
+  ['🛑','Stop here','Pare aquí','Arrêtez-vous ici','Halten Sie hier',['ここで|止めて|ください','koko de tomete kudasai'],['यहाँ रुकिए','yahā̃ rukiye'],['இங்கே நிறுத்துங்கள்','ingē niruttungaḷ']],
+  ['💰','How much is it?','¿Cuánto cuesta?','Combien ça coûte ?','Wie viel kostet das?',['いくら|ですか','ikura desu ka'],['यह कितने का है?','yah kitne kā hai?'],['இது எவ்வளவு?','idu evvaḷavu?']],
+  ['🏨','Where is the hotel?','¿Dónde está el hotel?','Où est l\'hôtel ?','Wo ist das Hotel?',['ホテルは|どこ|ですか','hoteru wa doko desu ka'],['होटल कहाँ है?','hoṭal kahā̃ hai?'],['ஹோட்டல் எங்கே?','hōṭṭal engē?']],
  ]},
  {id:'help',name:'In case of trouble',icon:'🆘',color:'#FF7C7C',items:[
-  ['🆘','Help!','¡Socorro!','Au secours !','Hilfe!',['助けて','tasukete'],['बचाओ!','bachāo!']],
-  ['🩺','Call a doctor','Llame a un médico','Appelez un médecin','Rufen Sie einen Arzt',['医者を|呼んで|ください','isha o yonde kudasai'],['डॉक्टर को बुलाइए','ḍākṭar ko bulāiye']],
-  ['🧭','I am lost','Estoy perdido','Je suis perdu','Ich habe mich verlaufen',['道に|迷いました','michi ni mayoimashita'],['मैं रास्ता भूल गया हूँ','main rāstā bhūl gayā hū̃']],
-  ['🚓','Call the police','Llame a la policía','Appelez la police','Rufen Sie die Polizei',['警察を|呼んで|ください','keisatsu o yonde kudasai'],['पुलिस को बुलाइए','pulis ko bulāiye']],
-  ['🚻','Where is the toilet?','¿Dónde está el baño?','Où sont les toilettes ?','Wo ist die Toilette?',['トイレは|どこ|ですか','toire wa doko desu ka'],['शौचालय कहाँ है?','shauchālay kahā̃ hai?']],
-  ['🤷','I don\'t understand','No entiendo','Je ne comprends pas','Ich verstehe nicht',['わかりません','wakarimasen'],['मुझे समझ नहीं आया','mujhe samajh nahī̃ āyā']],
-  ['🔁','Can you repeat?','¿Puede repetir?','Pouvez-vous répéter ?','Können Sie das wiederholen?',['もう一度|お願いします','mō ichido onegai shimasu'],['फिर से बोलिए','phir se boliye']],
-  ['🐢','Slowly, please','Más despacio, por favor','Plus lentement, s\'il vous plaît','Langsamer, bitte',['ゆっくり|お願いします','yukkuri onegai shimasu'],['धीरे बोलिए, कृपया','dhīre boliye, kripayā']],
+  ['🆘','Help!','¡Socorro!','Au secours !','Hilfe!',['助けて','tasukete'],['बचाओ!','bachāo!'],['உதவி!','udavi!']],
+  ['🩺','Call a doctor','Llame a un médico','Appelez un médecin','Rufen Sie einen Arzt',['医者を|呼んで|ください','isha o yonde kudasai'],['डॉक्टर को बुलाइए','ḍākṭar ko bulāiye'],['டாக்டரைக் கூப்பிடுங்கள்','ḍākṭaraik kūppiḍungaḷ']],
+  ['🧭','I am lost','Estoy perdido','Je suis perdu','Ich habe mich verlaufen',['道に|迷いました','michi ni mayoimashita'],['मैं रास्ता भूल गया हूँ','main rāstā bhūl gayā hū̃'],['நான் வழி தவறிவிட்டேன்','nān vaḻi tavarivitṭēn']],
+  ['🚓','Call the police','Llame a la policía','Appelez la police','Rufen Sie die Polizei',['警察を|呼んで|ください','keisatsu o yonde kudasai'],['पुलिस को बुलाइए','pulis ko bulāiye'],['காவல்துறையைக் கூப்பிடுங்கள்','kāvalturaiyaik kūppiḍungaḷ']],
+  ['🚻','Where is the toilet?','¿Dónde está el baño?','Où sont les toilettes ?','Wo ist die Toilette?',['トイレは|どこ|ですか','toire wa doko desu ka'],['शौचालय कहाँ है?','shauchālay kahā̃ hai?'],['கழிப்பறை எங்கே?','kaḻippaṟai engē?']],
+  ['🤷','I don\'t understand','No entiendo','Je ne comprends pas','Ich verstehe nicht',['わかりません','wakarimasen'],['मुझे समझ नहीं आया','mujhe samajh nahī̃ āyā'],['எனக்குப் புரியவில்லை','enakkup puriyavillai']],
+  ['🔁','Can you repeat?','¿Puede repetir?','Pouvez-vous répéter ?','Können Sie das wiederholen?',['もう一度|お願いします','mō ichido onegai shimasu'],['फिर से बोलिए','phir se boliye'],['மீண்டும் சொல்ல முடியுமா?','mīṇḍum solla muḍiyumā?']],
+  ['🐢','Slowly, please','Más despacio, por favor','Plus lentement, s\'il vous plaît','Langsamer, bitte',['ゆっくり|お願いします','yukkuri onegai shimasu'],['धीरे बोलिए, कृपया','dhīre boliye, kripayā'],['மெதுவாகப் பேசுங்கள்','meduvāgap pēsungaḷ']],
  ]},
 ];
-const THEMES = RAW.map(t=>({...t,items:t.items.map((r,i)=>({id:t.id+'-'+i,theme:t.id,e:r[0],en:r[1],es:r[2],fr:r[3],de:r[4],ja:r[5],hi:r[6]}))}));
+const THEMES = RAW.map(t=>({...t,items:t.items.map((r,i)=>({id:t.id+'-'+i,theme:t.id,e:r[0],en:r[1],es:r[2],fr:r[3],de:r[4],ja:r[5],hi:r[6],ta:r[7]}))}));
 const ITEM = {}; THEMES.forEach(t=>t.items.forEach(i=>ITEM[i.id]=i));
 const themeOf = id => THEMES.find(t=>t.id===id);
 
@@ -315,6 +317,7 @@ const srs = () => (S.srs[S.lang] ||= {});
 /* ---------- Text helpers ---------- */
 const raw = it => { const v = it[S.lang]; return Array.isArray(v) ? v[0] : v; };
 const txt = it => raw(it).replace(/\|/g,'');
+const mean = it => S.lang==='en' ? it.ta[0] : it.en;
 const translit = it => { const v = it[S.lang]; return Array.isArray(v) ? v[1] : ''; };
 const strip = s => s.replace(/[¿?¡!.,।、。]/g,' ').replace(/\s+/g,' ').trim();
 const toks = it => S.lang==='ja' ? raw(it).split('|').map(strip).filter(Boolean) : strip(raw(it)).split(' ');
@@ -555,7 +558,7 @@ function renderLearn(){
     <div class="scene" style="background:${tint(t.color,30)}"><span>${it.e}</span></div>
     <div class="phrase" lang="${S.lang}">${esc(txt(it))}</div>
     ${translit(it)?`<div class="translit">${esc(translit(it))}</div>`:''}
-    <div class="meaning">“${esc(it.en)}”</div>
+    <div class="meaning">“${esc(mean(it))}”</div>
     ${toks(it).length>1?`<div class="chips">${toks(it).map((w,i)=>`<button class="chip" data-act="word" data-k="${i}" lang="${S.lang}">${esc(w)}</button>`).join('')}</div><div class="hint" style="margin-top:4px">Tap a word to hear it alone</div>`:''}
     <div class="actions">
       <button class="round main" data-act="play">🔊 Listen</button>
@@ -580,16 +583,16 @@ function renderPractice(){
   if(ex.type==='picture'){
     body = `<div class="prompt">What did you hear?</div>
     <div class="bigplay"><button data-act="play" aria-label="Play">🔊</button><button class="slow" data-act="slow" aria-label="Play slowly">🐢</button></div>
-    <div class="opts pics">${ex.opts.map((o,i)=>`<button class="opt ${optCls(ex,o)}" data-act="sel" data-k="${o.id}"><span class="k">${i+1}</span>${o.e}${ex.state==='done'?`<small>${esc(o.en)}</small>`:''}</button>`).join('')}</div>`;
+    <div class="opts pics">${ex.opts.map((o,i)=>`<button class="opt ${optCls(ex,o)}" data-act="sel" data-k="${o.id}"><span class="k">${i+1}</span>${o.e}${ex.state==='done'?`<small>${esc(mean(o))}</small>`:''}</button>`).join('')}</div>`;
   }
   if(ex.type==='phrase'){
     body = `<div class="prompt">How do you say this?</div>
-    <div class="ask"><span class="e" style="background:${tint(themeOf(ex.item.theme).color,30)}">${ex.item.e}</span><b>“${esc(ex.item.en)}”</b></div>
+    <div class="ask"><span class="e" style="background:${tint(themeOf(ex.item.theme).color,30)}">${ex.item.e}</span><b>“${esc(mean(ex.item))}”</b></div>
     <div class="opts">${ex.opts.map((o,i)=>`<button class="opt ${optCls(ex,o)}" data-act="sel" data-k="${o.id}"><span class="k">${i+1}</span><span lang="${S.lang}">${esc(txt(o))}${translit(o)?`<small>${esc(translit(o))}</small>`:''}</span></button>`).join('')}</div>`;
   }
   if(ex.type==='build'){
     body = `<div class="prompt">Build the sentence</div>
-    <div class="ask"><span class="e" style="background:${tint(themeOf(ex.item.theme).color,30)}">${ex.item.e}</span><b>“${esc(ex.item.en)}”</b></div>
+    <div class="ask"><span class="e" style="background:${tint(themeOf(ex.item.theme).color,30)}">${ex.item.e}</span><b>“${esc(mean(ex.item))}”</b></div>
     <div class="answer">${ex.ans.map((k,i)=>`<button class="tile" data-act="unbuild" data-k="${i}" lang="${S.lang}">${esc(ex.bank[k].t)}</button>`).join('')}</div>
     <div class="bank">${ex.bank.map((b,k)=>`<button class="tile ${ex.ans.includes(k)?'used':''}" data-act="build" data-k="${k}" lang="${S.lang}">${esc(b.t)}</button>`).join('')}</div>`;
   }
@@ -625,7 +628,7 @@ function renderFoot(ex){
   $foot.className='foot '+(ex.ok?'good':'bad');
   $foot.innerHTML=`<div class="in">
     <div class="fb"><h3>${ex.ok?(ex.note?'✓ '+esc(ex.note):pick(['✓ Nice!','✓ Perfect!','✓ Great job!','✓ You got it!'])):'✕ Not quite — it comes back later'}</h3>
-    ${it?`<p lang="${S.lang}">${esc(txt(it))} ${translit(it)?`<small>· ${esc(translit(it))}</small>`:''} <small>· ${esc(it.en)}</small></p>`:`<p>${ex.miss?`${ex.miss} slip${ex.miss>1?'s':''} — nice recovery.`:'Flawless pairs!'}</p>`}</div>
+    ${it?`<p lang="${S.lang}">${esc(txt(it))} ${translit(it)?`<small>· ${esc(translit(it))}</small>`:''} <small>· ${esc(mean(it))}</small></p>`:`<p>${ex.miss?`${ex.miss} slip${ex.miss>1?'s':''} — nice recovery.`:'Flawless pairs!'}</p>`}</div>
     ${it?`<button class="ear" data-act="replay" aria-label="Hear it again">🔊</button>`:''}
     <button class="btn ${ex.ok?'ok':'bad'}" data-act="next">Continue</button></div>`;
 }
@@ -643,7 +646,7 @@ function renderDone(){
       <div class="stat" style="border-color:var(--accent)"><div class="l" style="background:var(--accent)">Phrases</div><div class="v">${Object.keys(v.first).length}</div></div>
     </div>
     ${missed.length?`<div class="missed"><h4>🧠 Added to Super Memory</h4>${missed.map(m=>`
-      <div class="mrow"><span class="e">${m.e}</span><span style="flex:1"><b lang="${S.lang}">${esc(txt(m))}</b><span>${translit(m)?esc(translit(m))+' · ':''}${esc(m.en)}</span></span><button class="ear" style="background:var(--surface-2)" data-act="sayid" data-k="${m.id}" aria-label="Play">🔊</button></div>`).join('')}</div>`
+      <div class="mrow"><span class="e">${m.e}</span><span style="flex:1"><b lang="${S.lang}">${esc(txt(m))}</b><span>${translit(m)?esc(translit(m))+' · ':''}${esc(mean(m))}</span></span><button class="ear" style="background:var(--surface-2)" data-act="sayid" data-k="${m.id}" aria-label="Play">🔊</button></div>`).join('')}</div>`
       : `<div class="missed" style="text-align:center"><h4 style="margin:0">Every phrase right on the first try ✨</h4></div>`}
   </div>`;
   $foot.className='foot';
