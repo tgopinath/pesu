@@ -345,8 +345,10 @@ function say(text, rate=0.92, onend){
   u.rate = rate; if(onend) u.onend=onend;
   speechSynthesis.speak(u);
 }
-// Android WebView exposes webkitSpeechRecognition but it can't reach the recogniser, so hide Say it there.
-const SR = window.Capacitor?.isNativePlatform?.() ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
+// Android WebView exposes webkitSpeechRecognition but it can't reach the recogniser, so the app uses the native plugin instead.
+const IN_APP = !!window.Capacitor?.isNativePlatform?.();
+const NSR = IN_APP && window.Capacitor.isPluginAvailable?.('SpeechRecognition') ? window.Capacitor.Plugins.SpeechRecognition : null;
+const SR = IN_APP ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
 let actx;
 function sfx(kind){
   try{
@@ -470,22 +472,40 @@ function quit(){ try{speechSynthesis.cancel()}catch(e){} closeLayer(); view={nam
 let rec=null, micBlocked=false;
 const PASS=.6, MAX_TRIES=3;
 // Learn cards wait for the learner to say the phrase back (only where speech recognition works)
-const mustSay = () => !!SR && !micBlocked;
+const canSpeak = () => !!(SR || NSR);
+const mustSay = () => canSpeak() && !micBlocked;
+if(NSR) NSR.available().then(r=>{ if(!r.available){ micBlocked=true; render(); } }).catch(()=>{});
 const cardPassed = v => !mustSay() || v.said?.has(v.li) || (v.tries?.[v.li]||0) >= MAX_TRIES;
+function heard(it, alts){
+  alts = alts.filter(Boolean);
+  if(!alts.length){ view.speak={state:'err',msg:'Didn\'t catch that — try again.'}; render(); return; }
+  const best = alts.map(a=>({a,s:sim(a,txt(it))})).sort((x,y)=>y.s-x.s)[0];
+  const v=view; v.speak={state:'res',heard:best.a,pct:Math.round(best.s*100)};
+  (v.tries ||= {})[v.li]=(v.tries[v.li]||0)+1;
+  if(best.s>=PASS) (v.said ||= new Set()).add(v.li);
+  sfx(best.s>=PASS?'good':'bad');
+  if(best.s>=.75 && !view.spokeXP?.has(it.id)){ (view.spokeXP ||= new Set()).add(it.id); addXP(5); view.xp+=5; save(); }
+  render();
+}
+async function listenNative(it){
+  if(view.speak?.state==='rec'){ NSR.stop().catch(()=>{}); return; }
+  try{
+    let p = await NSR.checkPermissions();
+    if(p.speechRecognition!=='granted') p = await NSR.requestPermissions();
+    if(p.speechRecognition!=='granted'){ micBlocked=true; view.speak={state:'err',msg:'Microphone access was blocked, so you can move on without speaking.'}; render(); return; }
+    try{ await NATIVE?.stop(); }catch(e){}
+    view.speak={state:'rec'}; render();
+    const r = await NSR.start({language:L().tts, maxResults:3, popup:false, partialResults:false});
+    heard(it, r?.matches||[]);
+  }catch(e){ view.speak={state:'err',msg:'Didn\'t catch that — try again.'}; render(); }
+}
 function listen(it){
+  if(NSR) return listenNative(it);
   if(!SR) return;
   if(rec){ rec.stop(); return; }
   rec = new SR(); rec.lang=L().tts; rec.interimResults=false; rec.maxAlternatives=3;
   view.speak={state:'rec'}; render();
-  rec.onresult = e => {
-    const alts=[...e.results[0]].map(a=>a.transcript);
-    const best = alts.map(a=>({a,s:sim(a,txt(it))})).sort((x,y)=>y.s-x.s)[0];
-    const v=view; v.speak={state:'res',heard:best.a,pct:Math.round(best.s*100)};
-    (v.tries ||= {})[v.li]=(v.tries[v.li]||0)+1;
-    if(best.s>=PASS) (v.said ||= new Set()).add(v.li);
-    sfx(best.s>=PASS?'good':'bad');
-    if(best.s>=.75 && !view.spokeXP?.has(it.id)){ (view.spokeXP ||= new Set()).add(it.id); addXP(5); view.xp+=5; save(); }
-  };
+  rec.onresult = e => heard(it, [...e.results[0]].map(a=>a.transcript));
   rec.onerror = e => { if(e.error==='not-allowed'||e.error==='service-not-allowed') micBlocked=true; view.speak={state:'err',msg:e.error==='not-allowed'?'Microphone access was blocked, so you can move on without speaking.':'Didn\'t catch that — try again.'} };
   rec.onend = () => { rec=null; if(view.speak?.state==='rec') view.speak={state:'err',msg:'Didn\'t catch that — try again.'}; render(); };
   try{ rec.start(); }catch(e){ rec=null; view.speak=null; render(); }
@@ -569,7 +589,7 @@ function renderLearn(){
     <div class="actions">
       <button class="round ${cardPassed(v)?'main':''}" data-act="play">🔊 Listen</button>
       <button class="round" data-act="slow">🐢 Slow</button>
-      ${SR?`<button class="round ${sp?.state==='rec'?'rec':!cardPassed(v)?'main':''}" data-act="mic">${sp?.state==='rec'?'● Listening…':'🎙️ Say it'}</button>`:''}
+      ${canSpeak()?`<button class="round ${sp?.state==='rec'?'rec':!cardPassed(v)?'main':''}" data-act="mic">${sp?.state==='rec'?'● Listening…':'🎙️ Say it'}</button>`:''}
     </div>
     ${sp?.state==='res'?`<div class="speakres"><b>${sp.pct>=90?'🌟 Excellent':sp.pct>=60?'👍 Good':'🔁 Try again'}</b> · ${sp.pct}% match<br><span style="color:var(--muted)">We heard: “${esc(sp.heard)}”</span></div>`:''}
     ${!cardPassed(v)&&sp?.state!=='res'&&sp?.state!=='rec'?`<div class="speakres">🎙️ <b>Your turn!</b> Listen, then tap <b>Say it</b> and repeat the phrase to continue.</div>`:''}
@@ -698,7 +718,7 @@ document.addEventListener('click', e=>{
     case 'mic': listen(v.items[v.li]); break;
     case 'prev': if(v.li>0){v.li--;v.speak=null;render();say(txt(v.items[v.li]))} break;
     case 'nextcard': if(!cardPassed(v)) break;
-      if(rec) rec.stop();
+      if(rec) rec.stop(); if(NSR && v.speak?.state==='rec') NSR.stop().catch(()=>{});
       v.speak=null;
       if(v.li<v.items.length-1){ v.li++; v.seen.add(v.li); render(); say(txt(v.items[v.li])); }
       else { v.phase='practice'; buildQueue(); render(); autoAudio(); }
