@@ -1,0 +1,16 @@
+{
+  "name": "Pesu · Phrase lessons",
+  "short_name": "Pesu",
+  "description": "Learn real-life phrases in Spanish, French, German, Japanese and Hindi through illustrated scenes, audio, speaking and a Super Memory review loop.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#FBF6EE",
+  "theme_color": "#FBF6EE",
+  "lang": "en",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" }
+  ]
+}
