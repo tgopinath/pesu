@@ -331,7 +331,10 @@ let voices=[];
 const loadVoices=()=>{try{voices=speechSynthesis.getVoices()}catch(e){}};
 if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=()=>{loadVoices();if(view.name==='home')render()}}
 const voiceFor = code => voices.find(v=>v.lang===code) || voices.find(v=>v.lang.replace('_','-').startsWith(code.slice(0,2)));
+// In the Android app the WebView has no speechSynthesis, so use the native text-to-speech plugin.
+const NATIVE = window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.TextToSpeech : null;
 function say(text, rate=0.92, onend){
+  if(NATIVE){ NATIVE.stop().catch(()=>{}).then(()=>NATIVE.speak({text:text.replace(/\|/g,''), lang:L().tts, rate:rate<0.8?0.6:0.9})).then(()=>onend&&onend()).catch(()=>{}); return; }
   if(!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
   const u = new SpeechSynthesisUtterance(text.replace(/\|/g,''));
@@ -339,7 +342,8 @@ function say(text, rate=0.92, onend){
   u.rate = rate; if(onend) u.onend=onend;
   speechSynthesis.speak(u);
 }
-const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+// Android WebView exposes webkitSpeechRecognition but it can't reach the recogniser, so hide Say it there.
+const SR = window.Capacitor?.isNativePlatform?.() ? null : (window.SpeechRecognition || window.webkitSpeechRecognition);
 let actx;
 function sfx(kind){
   try{
