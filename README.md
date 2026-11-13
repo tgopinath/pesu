@@ -2,7 +2,7 @@
 
 **பேசு — "speak".** Learn real-life phrases in Spanish, French, German, Japanese and Hindi.
 
-Live: https://pesu.vercel.app (see the repo's About for the current URL)
+Live: https://pesu-phrases.vercel.app
 
 - 7 illustrated scenes × 8 phrases: Essentials, Conversation, Numbers, Colours, Restaurant, Getting around, In case of trouble.
 - Learn: audio at normal and slow speed, tap any word to hear it, and **Say it** speech recognition with a match score.
