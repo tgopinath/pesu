@@ -467,7 +467,11 @@ const score = () => { const f=Object.values(view.first); return f.length?Math.ro
 function quit(){ try{speechSynthesis.cancel()}catch(e){} closeLayer(); view={name:'home'}; render(); }
 
 /* ---------- Speaking practice ---------- */
-let rec=null;
+let rec=null, micBlocked=false;
+const PASS=.6, MAX_TRIES=3;
+// Learn cards wait for the learner to say the phrase back (only where speech recognition works)
+const mustSay = () => !!SR && !micBlocked;
+const cardPassed = v => !mustSay() || v.said?.has(v.li) || (v.tries?.[v.li]||0) >= MAX_TRIES;
 function listen(it){
   if(!SR) return;
   if(rec){ rec.stop(); return; }
@@ -476,11 +480,13 @@ function listen(it){
   rec.onresult = e => {
     const alts=[...e.results[0]].map(a=>a.transcript);
     const best = alts.map(a=>({a,s:sim(a,txt(it))})).sort((x,y)=>y.s-x.s)[0];
-    view.speak={state:'res',heard:best.a,pct:Math.round(best.s*100)};
-    sfx(best.s>=.75?'good':'bad');
+    const v=view; v.speak={state:'res',heard:best.a,pct:Math.round(best.s*100)};
+    (v.tries ||= {})[v.li]=(v.tries[v.li]||0)+1;
+    if(best.s>=PASS) (v.said ||= new Set()).add(v.li);
+    sfx(best.s>=PASS?'good':'bad');
     if(best.s>=.75 && !view.spokeXP?.has(it.id)){ (view.spokeXP ||= new Set()).add(it.id); addXP(5); view.xp+=5; save(); }
   };
-  rec.onerror = e => { view.speak={state:'err',msg:e.error==='not-allowed'?'Microphone access was blocked.':'Didn\'t catch that — try again.'} };
+  rec.onerror = e => { if(e.error==='not-allowed'||e.error==='service-not-allowed') micBlocked=true; view.speak={state:'err',msg:e.error==='not-allowed'?'Microphone access was blocked, so you can move on without speaking.':'Didn\'t catch that — try again.'} };
   rec.onend = () => { rec=null; if(view.speak?.state==='rec') view.speak={state:'err',msg:'Didn\'t catch that — try again.'}; render(); };
   try{ rec.start(); }catch(e){ rec=null; view.speak=null; render(); }
 }
@@ -561,11 +567,13 @@ function renderLearn(){
     <div class="meaning">“${esc(mean(it))}”</div>
     ${toks(it).length>1?`<div class="chips">${toks(it).map((w,i)=>`<button class="chip" data-act="word" data-k="${i}" lang="${S.lang}">${esc(w)}</button>`).join('')}</div><div class="hint" style="margin-top:4px">Tap a word to hear it alone</div>`:''}
     <div class="actions">
-      <button class="round main" data-act="play">🔊 Listen</button>
+      <button class="round ${cardPassed(v)?'main':''}" data-act="play">🔊 Listen</button>
       <button class="round" data-act="slow">🐢 Slow</button>
-      ${SR?`<button class="round ${sp?.state==='rec'?'rec':''}" data-act="mic">${sp?.state==='rec'?'● Listening…':'🎙️ Say it'}</button>`:''}
+      ${SR?`<button class="round ${sp?.state==='rec'?'rec':!cardPassed(v)?'main':''}" data-act="mic">${sp?.state==='rec'?'● Listening…':'🎙️ Say it'}</button>`:''}
     </div>
-    ${sp?.state==='res'?`<div class="speakres"><b>${sp.pct>=90?'🌟 Excellent':sp.pct>=75?'👍 Good':'🔁 Try again'}</b> · ${sp.pct}% match<br><span style="color:var(--muted)">We heard: “${esc(sp.heard)}”</span></div>`:''}
+    ${sp?.state==='res'?`<div class="speakres"><b>${sp.pct>=90?'🌟 Excellent':sp.pct>=60?'👍 Good':'🔁 Try again'}</b> · ${sp.pct}% match<br><span style="color:var(--muted)">We heard: “${esc(sp.heard)}”</span></div>`:''}
+    ${!cardPassed(v)&&sp?.state!=='res'&&sp?.state!=='rec'?`<div class="speakres">🎙️ <b>Your turn!</b> Listen, then tap <b>Say it</b> and repeat the phrase to continue.</div>`:''}
+    ${!cardPassed(v)&&sp?.state==='res'?`<div class="hint">Listen again and have another go. ${MAX_TRIES-(v.tries?.[v.li]||0)} more tr${MAX_TRIES-(v.tries?.[v.li]||0)>1?'ies':'y'} before you can skip.</div>`:''}
     ${sp?.state==='err'?`<div class="speakres">${esc(sp.msg)}</div>`:''}
     <div class="dots">${v.items.map((_,i)=>`<i class="${i===v.li?'on':v.seen.has(i)?'seen':''}"></i>`).join('')}</div>
   </div>
@@ -573,7 +581,7 @@ function renderLearn(){
   v._lastCard = v.li;
   $foot.innerHTML = `<div class="in">
     <button class="btn ghost" data-act="prev" ${v.li===0?'disabled style="opacity:.4"':''}>Back</button>
-    <button class="btn wide" data-act="nextcard">${last?'Test yourself →':'Next'}</button></div>`;
+    <button class="btn wide" data-act="nextcard" ${cardPassed(v)?'':'disabled'}>${!cardPassed(v)?'🎙️ Say it to continue':v.said?.has(v.li)||!mustSay()?(last?'Test yourself →':'Next'):'Skip for now'}</button></div>`;
   $foot.className='foot';
 }
 
@@ -689,7 +697,7 @@ document.addEventListener('click', e=>{
     case 'word': { say(toks(v.items[v.li])[+k],.8); b.classList.add('playing'); setTimeout(()=>b.classList.remove('playing'),600); break; }
     case 'mic': listen(v.items[v.li]); break;
     case 'prev': if(v.li>0){v.li--;v.speak=null;render();say(txt(v.items[v.li]))} break;
-    case 'nextcard':
+    case 'nextcard': if(!cardPassed(v)) break;
       if(rec) rec.stop();
       v.speak=null;
       if(v.li<v.items.length-1){ v.li++; v.seen.add(v.li); render(); say(txt(v.items[v.li])); }
