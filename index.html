@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-m3-primary="#d9502f">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
@@ -9,6 +9,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -209,6 +210,44 @@ kbd{font:inherit;font-size:11px;padding:1px 5px;border-radius:5px;border:1px sol
 .hint{text-align:center;font-size:12px;color:var(--muted);margin-top:14px}
 @media (max-width:420px){.method .step span:not(.n){display:none}.opts.pics .opt{font-size:48px;min-height:110px}}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+<link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.css">
+<style>
+/* ---------- Android app mode (Material Design 3, from the shared Kolam M3 kit) ----------
+   Only html.k-android (inside the Android app) is touched; the website keeps its own look. The kit builds the
+   app bar and navigation bar; here Pesu's colours point at the M3 roles and its components get M3 shapes. */
+html.k-android{--md-ref-typeface-brand:Figtree,system-ui,sans-serif;--md-ref-typeface-plain:Figtree,system-ui,sans-serif;
+  --accent:var(--md-sys-color-primary);--accent-deep:var(--md-sys-color-primary);--accent-soft:var(--md-sys-color-primary-container);--accent-ink:var(--md-sys-color-on-primary);
+  --surface-2:var(--md-sys-color-surface-container-highest);--muted:var(--md-sys-color-on-surface-variant);--r:var(--md-sys-shape-corner-medium);--shadow:var(--md-sys-elevation-level1)}
+html.k-android #app{padding:8px 16px 32px;min-height:0}
+html.k-android .top,html.k-android .sbar .x{display:none}
+html.k-android .sbar{position:static;padding:8px 0 12px;background:transparent}
+html.k-android.pesu-full .md-navigation-bar{display:none}
+html.k-android.pesu-full body{padding-bottom:calc(96px + var(--md-inset-bottom))}
+html.k-android .hero{padding:8px 0 4px}
+html.k-android .hero h1{font:var(--md-sys-typescale-headline-medium);font-family:Fraunces,Georgia,serif;font-weight:700}
+html.k-android .btn{height:40px;border-radius:var(--md-sys-shape-corner-full);box-shadow:none;font:var(--md-sys-typescale-label-large);font-weight:700;padding:0 24px;background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary)}
+html.k-android .btn:disabled{background:color-mix(in srgb,var(--md-sys-color-on-surface) 12%,transparent);color:color-mix(in srgb,var(--md-sys-color-on-surface) 38%,transparent);box-shadow:none}
+html.k-android .btn.ok{background:var(--ok);color:#fff;box-shadow:none}
+html.k-android .btn.bad{background:var(--bad);color:#fff;box-shadow:none}
+html.k-android .btn.ghost{background:transparent;color:var(--md-sys-color-primary);border:1px solid var(--md-sys-color-outline)}
+html.k-android .foot{background:var(--md-sys-color-surface-container);border-top:0;padding-bottom:calc(14px + var(--md-inset-bottom))}
+html.k-android .theme,html.k-android .lang,html.k-android .step{border:0;border-bottom-width:0;background:var(--md-sys-color-surface-container-low);box-shadow:var(--md-sys-elevation-level1);border-radius:var(--md-sys-shape-corner-medium)}
+html.k-android .lang.on{background:var(--md-sys-color-secondary-container);color:var(--md-sys-color-on-secondary-container);box-shadow:none}
+html.k-android .memory{border-radius:var(--md-sys-shape-corner-large);background:var(--md-sys-color-primary-container);color:var(--md-sys-color-on-primary-container);box-shadow:none;border:0}
+html.k-android .memory.calm{background:var(--md-sys-color-surface-container-high);color:var(--md-sys-color-on-surface)}
+html.k-android .memory .go{border-radius:var(--md-sys-shape-corner-full);background:var(--md-sys-color-primary);color:var(--md-sys-color-on-primary)}
+html.k-android .card{border:0;border-radius:var(--md-sys-shape-corner-extra-large);background:var(--md-sys-color-surface-container-low);box-shadow:var(--md-sys-elevation-level1)}
+html.k-android .chip{height:32px;padding:0 12px;border-radius:var(--md-sys-shape-corner-small);background:transparent;box-shadow:inset 0 0 0 1px var(--md-sys-color-outline)}
+html.k-android .round{border-radius:var(--md-sys-shape-corner-full)}
+html.k-android .section-title{font:var(--md-sys-typescale-title-small);text-transform:none;letter-spacing:0;color:var(--md-sys-color-on-surface-variant)}
+html.k-android .prog{height:4px;background:var(--md-sys-color-secondary-container)}
+html.k-android .prog i{background:var(--md-sys-color-primary);box-shadow:none}
+/* Review page (app only) */
+.mstats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:8px 0 20px}
+.mstat{background:var(--md-sys-color-surface-container-low,var(--surface));border-radius:var(--md-sys-shape-corner-medium,16px);padding:16px}
+.mstat b{display:block;font-size:28px;line-height:36px}
+.mstat span{color:var(--muted);font-size:14px}
 </style>
 </head>
 <body>
@@ -467,7 +506,7 @@ function finish(){
   save(); v.phase='done'; sfx('done'); render(); confetti();
 }
 const score = () => { const f=Object.values(view.first); return f.length?Math.round(100*f.filter(Boolean).length/f.length):100; };
-function quit(){ try{speechSynthesis.cancel()}catch(e){} closeLayer(); view={name:'home'}; render(); }
+function quit(){ try{speechSynthesis.cancel()}catch(e){} closeLayer(); if(m3.enabled && location.hash==='#/session'){ history.back(); return; } view={name:'home'}; render(); }
 
 /* ---------- Speaking practice ---------- */
 let rec=null, micBlocked=false;
@@ -522,6 +561,8 @@ function render(){
   $foot.innerHTML=''; $foot.className='';
   if(view.name==='onboard') return renderOnboard();
   if(view.name==='home') return renderHome();
+  if(view.name==='review') return renderReviewPage();
+  if(view.name==='languages') return renderLangPage();
   const v=view;
   if(v.phase==='learn') return renderLearn();
   if(v.phase==='practice') return renderPractice();
@@ -704,7 +745,7 @@ document.addEventListener('click', e=>{
   if(b.dataset.act==='closelayer' && e.target.closest('[data-stop]')) return;
   const k=b.dataset.k, v=view, ex = v.name==='session' && v.phase==='practice' ? curEx() : null;
   switch(b.dataset.act){
-    case 'pick': S.lang=k; save(); closeLayer(); view={name:'home'}; render(); window.scrollTo(0,0); break;
+    case 'pick': S.lang=k; save(); closeLayer(); view={name:'home'}; if(m3.enabled && location.hash!=='#/' && location.hash!==''){ location.hash='#/'; break; } render(); if(m3.enabled) m3Title(); window.scrollTo(0,0); break;
     case 'langs': openLangs(); break;
     case 'closelayer': closeLayer(); break;
     case 'lesson': startLesson(k); break;
@@ -762,7 +803,62 @@ document.addEventListener('keydown', e=>{
   if(ex.type==='build' && e.key==='Backspace' && ex.state==='ask'){ ex.ans.pop(); render(); }
 });
 
-render();
+/* ---------- Android app mode (Material Design 3) ----------
+   In the app Pesu gets three destinations (Scenes, Super Memory, Languages) and lessons open as a full-screen task
+   at #/session, so the phone's Back and the app bar arrow leave a lesson. In a browser m3 is a stub and nothing changes. */
+const m3 = window.KolamM3 ? KolamM3.init({
+  primary:'#d9502f', title:'Pesu',
+  destinations:[
+    {id:'home', label:'Scenes', icon:'school', href:'#/'},
+    {id:'review', label:'Review', icon:'psychology', href:'#/review'},
+    {id:'languages', label:'Languages', icon:'translate', href:'#/languages'},
+  ],
+  onBack:()=>{ if($layer.innerHTML){ closeLayer(); return true; } },
+}) : {enabled:false};
+function renderReviewPage(){
+  const due=dueItems().length, totalL=THEMES.reduce((a,t)=>a+learned(t),0), totalM=THEMES.reduce((a,t)=>a+mastered(t),0);
+  $app.innerHTML=`<div class="hero"><h1 class="h-display">Super Memory</h1><p>Phrases you learn come back after 10 minutes, then 1, 3, 7 and 21 days, so they stick.</p></div>
+  <div class="mstats">
+    <div class="mstat"><b>${due}</b><span>due to refresh</span></div>
+    <div class="mstat"><b>${S.streak}</b><span>day streak</span></div>
+    <div class="mstat"><b>${totalL}</b><span>phrases learned</span></div>
+    <div class="mstat"><b>${totalM}</b><span>mastered</span></div>
+    <div class="mstat"><b>${S.today.xp} / ${GOAL}</b><span>XP today</span></div>
+    <div class="mstat"><b>${S.xp}</b><span>XP total</span></div>
+  </div>
+  ${totalL?`<button class="memory ${due?'':'calm'}" data-act="review" style="width:100%;text-align:left"><span><h3>${due?`${due} phrase${due>1?'s':''} to refresh`:'Super Memory is up to date'}</h3>
+    <p>${due?'Quick review before they fade.':'Practise your weakest phrases anyway?'}</p></span><span class="go">${due?'Review':'Practise'}</span></button>`
+    :`<p class="note">Learn a scene first. The phrases you meet there show up here for review.</p>`}`;
+}
+function renderLangPage(){
+  $app.innerHTML=`<div class="hero"><h1 class="h-display">Languages</h1><p>Progress is kept separately for each one.</p></div>
+  <div class="langs">${Object.entries(LANGS).map(([k,l])=>{const n=Object.keys(S.srs[k]||{}).length;return `
+    <button class="lang ${k===S.lang?'on':''}" data-act="pick" data-k="${k}"><span class="f">${l.flag}</span><span><b>${l.name}</b><span>${esc(l.native)} · ${n?`${n} phrases learned`:'Not started'}</span></span></button>`}).join('')}</div>`;
+}
+function m3Route(){
+  const h=location.hash||'#/';
+  if(h==='#/session'){ if(view.name!=='session'){ history.replaceState(null,'','#/'); return m3Route(); } }
+  else {
+    if(view.name==='session'){ try{speechSynthesis.cancel()}catch(e){} try{rec?.abort?.()}catch(e){} }
+    if(!S.lang) view={name:'onboard'};
+    else view={name: h==='#/review'?'review': h==='#/languages'?'languages':'home'};
+    render(); window.scrollTo(0,0);
+  }
+  m3Title();
+}
+function m3Title(){
+  const v=view, full=v.name==='session'||v.name==='onboard';
+  document.documentElement.classList.toggle('pesu-full', full);
+  m3.setTitle(v.name==='session'?(v.theme?v.theme.name:'Super Memory review'):v.name==='review'?'Super Memory':v.name==='languages'?'Languages':v.name==='onboard'?'Pesu':`Pesu · ${L().name}`);
+  if(v.name==='session') setTimeout(()=>m3.setBack('#/'));
+}
+if(m3.enabled){
+  const _start=startLesson, _review=startReview;
+  startLesson=id=>{ _start(id); if(location.hash!=='#/session') location.hash='#/session'; else m3Title(); };
+  startReview=()=>{ _review(); if(view.name==='session'){ if(location.hash!=='#/session') location.hash='#/session'; else m3Title(); } };
+  addEventListener('hashchange', m3Route);
+  m3Route();
+} else render();
 if('serviceWorker' in navigator && location.protocol==='https:') addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 </script>
 </body>
