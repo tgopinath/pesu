@@ -10,6 +10,8 @@
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <script src="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.js"></script>
+<!-- iPhone app mode (Apple HIG): only switches on inside the iPhone app (or ?app=ios); the website keeps its own look -->
+<script src="https://tgopinath.github.io/kolam-design-system/ios/kolam-ios.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -212,6 +214,7 @@ kbd{font:inherit;font-size:11px;padding:1px 5px;border-radius:5px;border:1px sol
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style>
 <link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/m3/kolam-m3.css">
+<link rel="stylesheet" href="https://tgopinath.github.io/kolam-design-system/ios/kolam-ios.css">
 <style>
 /* ---------- Android app mode (Material Design 3, from the shared Kolam M3 kit) ----------
    Only html.k-android (inside the Android app) is touched; the website keeps its own look. The kit builds the
@@ -243,6 +246,29 @@ html.k-android .round{border-radius:var(--md-sys-shape-corner-full)}
 html.k-android .section-title{font:var(--md-sys-typescale-title-small);text-transform:none;letter-spacing:0;color:var(--md-sys-color-on-surface-variant)}
 html.k-android .prog{height:4px;background:var(--md-sys-color-secondary-container)}
 html.k-android .prog i{background:var(--md-sys-color-primary);box-shadow:none}
+/* ---------- iPhone app mode (Apple HIG, from the shared Kolam iOS kit) ----------
+   Only html.k-ios (inside the iPhone app, or ?app=ios) is touched; the website keeps its own look. The kit builds the
+   navigation bar and the Liquid Glass tab bar; Pesu keeps its warm colours, its components get iOS shapes. */
+html.k-ios{--accent:var(--ios-tint-fill);--accent-deep:var(--ios-tint)}
+html.k-ios body{background:var(--bg);font-family:var(--ios-font)}
+html.k-ios #app{padding:4px 16px 32px;min-height:0}
+html.k-ios .top,html.k-ios .sbar .x{display:none}
+html.k-ios .sbar{position:static;padding:8px 0 12px;background:transparent}
+html.k-ios.pesu-full .ios-tabbar{display:none}
+html.k-ios:not(.pesu-full) body{padding-bottom:calc(96px + env(safe-area-inset-bottom))}
+html.k-ios .hero{padding:4px 0 4px}
+html.k-ios .hero > h1.ios-dup{display:none} /* the navigation bar's large title shows it */
+html.k-ios .btn{min-height:50px;border-radius:999px;box-shadow:none;font:600 17px/22px var(--ios-font);letter-spacing:-.024em}
+html.k-ios .btn:active,html.k-ios .theme:active,html.k-ios .lang:active,html.k-ios .opt:active,html.k-ios .tile:active{opacity:.6}
+html.k-ios .btn.ghost{background:color-mix(in srgb,var(--ios-tint-fill) 15%,transparent);color:var(--ios-tint);border:0}
+html.k-ios .foot{background:var(--ios-bar);-webkit-backdrop-filter:var(--ios-glass-filter);backdrop-filter:var(--ios-glass-filter);border-top:.5px solid var(--ios-sep);padding-bottom:calc(14px + env(safe-area-inset-bottom))}
+html.k-ios .theme,html.k-ios .lang,html.k-ios .step,html.k-ios .card,html.k-ios .mstat{border:0;box-shadow:none;border-radius:22px;background:var(--surface)}
+html.k-ios .lang.on{box-shadow:inset 0 0 0 2px var(--ios-tint)}
+html.k-ios .memory{border-radius:22px;box-shadow:none;border:0}
+html.k-ios .chip{border-radius:999px;box-shadow:none;background:var(--ios-fill3)}
+html.k-ios .section-title{font:600 13px/18px var(--ios-font);text-transform:none;letter-spacing:0;color:var(--muted)}
+html.k-ios .prog{height:4px;border-radius:2px}
+html.k-ios .prog i{box-shadow:none}
 /* Review page (app only) */
 .mstats{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:8px 0 20px}
 .mstat{background:var(--md-sys-color-surface-container-low,var(--surface));border-radius:var(--md-sys-shape-corner-medium,16px);padding:16px}
@@ -372,11 +398,19 @@ const tint = (c,p=22) => `color-mix(in srgb, ${c} ${p}%, var(--surface))`;
 /* ---------- Audio: TTS, speech recognition, sfx ---------- */
 let voices=[];
 const loadVoices=()=>{try{voices=speechSynthesis.getVoices()}catch(e){}};
-if('speechSynthesis' in window){loadVoices();speechSynthesis.onvoiceschanged=()=>{loadVoices();if(view.name==='home')render()}}
+if('speechSynthesis' in window && !window.webkit?.messageHandlers?.tts){loadVoices();speechSynthesis.onvoiceschanged=()=>{loadVoices();if(view.name==='home')render()}}
 const voiceFor = code => voices.find(v=>v.lang===code) || voices.find(v=>v.lang.replace('_','-').startsWith(code.slice(0,2)));
 // In the Android app the WebView has no speechSynthesis, so use the native text-to-speech plugin.
 const NATIVE = window.Capacitor?.isNativePlatform?.() ? window.Capacitor.Plugins?.TextToSpeech : null;
+// In the iPhone app, speech goes through the shell's native AVSpeechSynthesizer (messageHandlers.tts): it plays with the
+// ring/silent switch on and has the system's voices for every language, including Tamil when the voice is installed.
+const IOS_TTS = window.webkit?.messageHandlers?.tts || null;
+const ttsDone = {}; let ttsSeq = 0;
+window.__pesuTTSDone = id => { const f = ttsDone[id]; delete ttsDone[id]; f && f(); };
+if(IOS_TTS && Array.isArray(window.KolamShell?.ttsLangs)) voices = window.KolamShell.ttsLangs.map(lang => ({lang}));
+function stopSay(){ try{ IOS_TTS?.postMessage({action:'stop'}); }catch(e){} try{speechSynthesis.cancel()}catch(e){} }
 function say(text, rate=0.92, onend){
+  if(IOS_TTS){ const id = ++ttsSeq; if(onend) ttsDone[id] = onend; IOS_TTS.postMessage({action:'speak', id, text:text.replace(/\|/g,''), lang:L().tts, rate}); return; }
   if(NATIVE){ NATIVE.stop().catch(()=>{}).then(()=>NATIVE.speak({text:text.replace(/\|/g,''), lang:L().tts, rate:rate<0.8?0.6:0.9})).then(()=>onend&&onend()).catch(()=>{}); return; }
   if(!('speechSynthesis' in window)) return;
   speechSynthesis.cancel();
@@ -506,7 +540,7 @@ function finish(){
   save(); v.phase='done'; sfx('done'); render(); confetti();
 }
 const score = () => { const f=Object.values(view.first); return f.length?Math.round(100*f.filter(Boolean).length/f.length):100; };
-function quit(){ try{speechSynthesis.cancel()}catch(e){} closeLayer(); if(m3.enabled && location.hash==='#/session'){ history.back(); return; } view={name:'home'}; render(); }
+function quit(){ stopSay(); closeLayer(); if(APPNAV && location.hash==='#/session'){ history.back(); return; } view={name:'home'}; render(); }
 
 /* ---------- Speaking practice ---------- */
 let rec=null, micBlocked=false;
@@ -745,7 +779,7 @@ document.addEventListener('click', e=>{
   if(b.dataset.act==='closelayer' && e.target.closest('[data-stop]')) return;
   const k=b.dataset.k, v=view, ex = v.name==='session' && v.phase==='practice' ? curEx() : null;
   switch(b.dataset.act){
-    case 'pick': S.lang=k; save(); closeLayer(); view={name:'home'}; if(m3.enabled && location.hash!=='#/' && location.hash!==''){ location.hash='#/'; break; } render(); if(m3.enabled) m3Title(); window.scrollTo(0,0); break;
+    case 'pick': S.lang=k; save(); closeLayer(); view={name:'home'}; if(APPNAV && location.hash!=='#/' && location.hash!==''){ location.hash='#/'; break; } render(); if(APPNAV) m3Title(); window.scrollTo(0,0); break;
     case 'langs': openLangs(); break;
     case 'closelayer': closeLayer(); break;
     case 'lesson': startLesson(k); break;
@@ -815,9 +849,33 @@ const m3 = window.KolamM3 ? KolamM3.init({
   ],
   onBack:()=>{ if($layer.innerHTML){ closeLayer(); return true; } },
 }) : {enabled:false};
+if(!m3.enabled){ m3.setTitle=()=>{}; m3.setBack=()=>{}; }
+/* ---------- iPhone app mode (Apple HIG, from the shared Kolam iOS kit) ----------
+   Same three destinations as the Android app, as a Liquid Glass tab bar; lessons open full screen at #/session with
+   a back button. Only inside the Pesu-iOS shell (or ?app=ios); in a browser KolamIOS.init returns null. iOS wins over M3. */
+const ios = window.KolamIOS && (KolamIOS.isIOS || KolamIOS.detect(['Pesu-iOS'])) ? KolamIOS.init({
+  appName:'Pesu', uaTokens:['Pesu-iOS'], tint:{light:'#B8401F', dark:'#FF7A5C'},
+  tabs:[
+    {id:'home', label:'Scenes', icon:'square.grid.2x2', href:'#/'},
+    {id:'review', label:'Super Memory', icon:'arrow.clockwise', href:'#/review'},
+    {id:'languages', label:'Languages', icon:'globe', href:'#/languages'},
+  ],
+  currentTab:'home', content:'#app',
+}) : null;
+if(ios) document.documentElement.classList.remove('k-android','k-app');
+const APPNAV = m3.enabled || !!ios;
+function iosTitle(){
+  if(!ios) return;
+  const v=view, langBtn={id:'iosLang', text:L()?.flag||'', label:'Change language', onClick:()=>{ location.hash='#/languages'; }};
+  KolamIOS.tabBar.select(v.name==='review'?'review':v.name==='languages'?'languages':v.name==='home'?'home':null);
+  if(v.name==='session') KolamIOS.navBar.set({title:v.theme?v.theme.name:'Super Memory review', back:{label:'Scenes', onClick:()=>quit()}, keepTitle:true});
+  else if(v.name==='onboard') KolamIOS.navBar.set({title:'Pesu', large:true, keepTitle:true});
+  else KolamIOS.navBar.set({title:v.name==='review'?'Super Memory':v.name==='languages'?'Languages':L().name, large:true, actions:v.name==='home'?[langBtn]:[], keepTitle:true});
+  KolamIOS.enhance(document.getElementById('app'));
+}
 function renderReviewPage(){
   const due=dueItems().length, totalL=THEMES.reduce((a,t)=>a+learned(t),0), totalM=THEMES.reduce((a,t)=>a+mastered(t),0);
-  $app.innerHTML=`<div class="hero"><h1 class="h-display">Super Memory</h1><p>Phrases you learn come back after 10 minutes, then 1, 3, 7 and 21 days, so they stick.</p></div>
+  $app.innerHTML=`<div class="hero"><h1 class="h-display ios-dup">Super Memory</h1><p>Phrases you learn come back after 10 minutes, then 1, 3, 7 and 21 days, so they stick.</p></div>
   <div class="mstats">
     <div class="mstat"><b>${due}</b><span>due to refresh</span></div>
     <div class="mstat"><b>${S.streak}</b><span>day streak</span></div>
@@ -831,7 +889,7 @@ function renderReviewPage(){
     :`<p class="note">Learn a scene first. The phrases you meet there show up here for review.</p>`}`;
 }
 function renderLangPage(){
-  $app.innerHTML=`<div class="hero"><h1 class="h-display">Languages</h1><p>Progress is kept separately for each one.</p></div>
+  $app.innerHTML=`<div class="hero"><h1 class="h-display ios-dup">Languages</h1><p>Progress is kept separately for each one.</p></div>
   <div class="langs">${Object.entries(LANGS).map(([k,l])=>{const n=Object.keys(S.srs[k]||{}).length;return `
     <button class="lang ${k===S.lang?'on':''}" data-act="pick" data-k="${k}"><span class="f">${l.flag}</span><span><b>${l.name}</b><span>${esc(l.native)} · ${n?`${n} phrases learned`:'Not started'}</span></span></button>`}).join('')}</div>`;
 }
@@ -839,7 +897,7 @@ function m3Route(){
   const h=location.hash||'#/';
   if(h==='#/session'){ if(view.name!=='session'){ history.replaceState(null,'','#/'); return m3Route(); } }
   else {
-    if(view.name==='session'){ try{speechSynthesis.cancel()}catch(e){} try{rec?.abort?.()}catch(e){} }
+    if(view.name==='session'){ stopSay(); try{rec?.abort?.()}catch(e){} }
     if(!S.lang) view={name:'onboard'};
     else view={name: h==='#/review'?'review': h==='#/languages'?'languages':'home'};
     render(); window.scrollTo(0,0);
@@ -851,8 +909,9 @@ function m3Title(){
   document.documentElement.classList.toggle('pesu-full', full);
   m3.setTitle(v.name==='session'?(v.theme?v.theme.name:'Super Memory review'):v.name==='review'?'Super Memory':v.name==='languages'?'Languages':v.name==='onboard'?'Pesu':`Pesu · ${L().name}`);
   if(v.name==='session') setTimeout(()=>m3.setBack('#/'));
+  iosTitle();
 }
-if(m3.enabled){
+if(APPNAV){
   const _start=startLesson, _review=startReview;
   startLesson=id=>{ _start(id); if(location.hash!=='#/session') location.hash='#/session'; else m3Title(); };
   startReview=()=>{ _review(); if(view.name==='session'){ if(location.hash!=='#/session') location.hash='#/session'; else m3Title(); } };
